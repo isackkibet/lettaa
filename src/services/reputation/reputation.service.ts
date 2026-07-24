@@ -9,7 +9,7 @@ import { clamp, safeDivide } from '@/utils/math.utils';
  */
 export class ReputationService {
   calculate(player: Player): number {
-    const totalDeliveries = player.deliveriesCompleted;
+    const totalDeliveries = player.totalDeliveries;
 
     const punctualityRate = safeDivide(player.onTimeDeliveries, totalDeliveries, 1);
     const averageRatingScore = safeDivide(

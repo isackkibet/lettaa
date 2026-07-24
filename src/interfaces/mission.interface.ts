@@ -8,6 +8,10 @@ export interface Mission {
   target: number;
   completed: boolean;
   xpReward: number;
+  // Synced from letaa_gamification.quests (reward_coins/reward_gems/reward_tokens)
+  coinReward: number;
+  gemReward: number;
+  tokenReward: number;
 }
 
 export interface MissionProgressResult {

@@ -6,4 +6,9 @@ import { Player, DailyMissionProgress } from '../interfaces';
  * player id. This factory should only remain as a fallback/test fixture.
  */
 export declare function createDefaultDailyMissionProgress(): DailyMissionProgress;
+/**
+ * Defaults mirror the column defaults in `letaa_core.riders`/`users`
+ * (letaa_db.sql) so a fresh in-memory player matches what a freshly
+ * inserted DB row would look like.
+ */
 export declare function createDefaultPlayer(id?: string): Player;

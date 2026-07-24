@@ -10,7 +10,7 @@ const math_utils_1 = require("../../utils/math.utils");
  */
 class ReputationService {
     calculate(player) {
-        const totalDeliveries = player.deliveriesCompleted;
+        const totalDeliveries = player.totalDeliveries;
         const punctualityRate = (0, math_utils_1.safeDivide)(player.onTimeDeliveries, totalDeliveries, 1);
         const averageRatingScore = (0, math_utils_1.safeDivide)(player.fiveStarRatings, player.totalRatedDeliveries, 1);
         // Completion rate has no "attempted but abandoned" concept in this MVP,

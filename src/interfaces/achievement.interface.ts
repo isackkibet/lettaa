@@ -1,4 +1,4 @@
-import { AchievementId } from '@/constants/achievements.constants';
+import { AchievementCategory, AchievementId } from '@/constants/achievements.constants';
 
 export interface Achievement {
   id: AchievementId;
@@ -6,4 +6,11 @@ export interface Achievement {
   description: string;
   earned: boolean;
   earnedAt: string | null;
+  // Synced from letaa_gamification.achievements
+  category: AchievementCategory;
+  badgeIcon: string | null;
+  xpReward: number;
+  coinReward: number;
+  tokenReward: number;
+  targetValue: number;
 }

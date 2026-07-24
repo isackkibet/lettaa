@@ -33,9 +33,9 @@ export class GameService {
       const reputation = this.reputationService.calculate(player);
       return {
         xpEarned: 0,
-        totalXp: player.totalXp,
+        totalXp: player.xp,
         level: player.level,
-        levelTitle: this.levelService.checkLevel(player.level, player.totalXp).levelTitle,
+        levelTitle: this.levelService.checkLevel(player.level, player.xp).levelTitle,
         levelUp: false,
         achievementsUnlocked: [],
         missions: [],
@@ -64,7 +64,7 @@ export class GameService {
     ];
 
     const totalXpEarned = xpDelta + xpAwarded;
-    updatedPlayer.totalXp = player.totalXp + totalXpEarned;
+    updatedPlayer.xp = player.xp + totalXpEarned;
 
     // 3. Achievement check (depends on updated cumulative stats).
     const { newlyUnlocked } = this.achievementService.evaluate(updatedPlayer, player.level);
@@ -74,7 +74,7 @@ export class GameService {
     ];
 
     // 4. Level check against the pre-delivery level.
-    const levelResult = this.levelService.checkLevel(player.level, updatedPlayer.totalXp);
+    const levelResult = this.levelService.checkLevel(player.level, updatedPlayer.xp);
     updatedPlayer.level = levelResult.level;
 
     // 5. Reputation update from the fresh cumulative stats.
@@ -92,7 +92,7 @@ export class GameService {
       levelUp: levelResult.levelUp,
       levelTitle: levelResult.levelTitle,
       currentLevel: levelResult.level,
-      totalXp: updatedPlayer.totalXp,
+      totalXp: updatedPlayer.xp,
       wasLate: !event.onTime,
       newlyUnlockedAchievements: newlyUnlocked,
       newlyCompletedMissions: newlyCompleted,
@@ -103,7 +103,7 @@ export class GameService {
 
     return {
       xpEarned: totalXpEarned,
-      totalXp: updatedPlayer.totalXp,
+      totalXp: updatedPlayer.xp,
       level: levelResult.level,
       levelTitle: levelResult.levelTitle,
       levelUp: levelResult.levelUp,
@@ -119,15 +119,21 @@ export class GameService {
   private applyDeliveryToPlayer(player: Player, event: DeliveryEvent): Player {
     const wasRated = typeof event.rating === 'number';
     const wasFiveStar = event.rating === 5;
+    const currentStreak = event.onTime ? player.currentStreak + 1 : 0;
 
     return {
       ...player,
-      deliveriesCompleted: player.deliveriesCompleted + 1,
+      totalDeliveries: player.totalDeliveries + 1,
+      // `applyDeliveryToPlayer` only runs when event.deliveryCompleted is
+      // true, so every call here is a success by definition — the engine
+      // has no "failed delivery" event to count against failedDeliveries.
+      successfulDeliveries: player.successfulDeliveries + 1,
       onTimeDeliveries: player.onTimeDeliveries + (event.onTime ? 1 : 0),
       lateDeliveries: player.lateDeliveries + (event.onTime ? 0 : 1),
       fiveStarRatings: player.fiveStarRatings + (wasFiveStar ? 1 : 0),
       totalRatedDeliveries: player.totalRatedDeliveries + (wasRated ? 1 : 0),
-      currentOnTimeStreak: event.onTime ? player.currentOnTimeStreak + 1 : 0,
+      currentStreak,
+      longestStreak: Math.max(player.longestStreak, currentStreak),
       dailyMissionProgress: {
         ...player.dailyMissionProgress,
         deliveriesToday: player.dailyMissionProgress.deliveriesToday + 1,

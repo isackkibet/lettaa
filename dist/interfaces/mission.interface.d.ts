@@ -7,6 +7,9 @@ export interface Mission {
     target: number;
     completed: boolean;
     xpReward: number;
+    coinReward: number;
+    gemReward: number;
+    tokenReward: number;
 }
 export interface MissionProgressResult {
     missions: Mission[];

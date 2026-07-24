@@ -29,6 +29,9 @@ export class MissionService {
         target: def.target,
         completed: nowCompleted,
         xpReward: def.xpReward,
+        coinReward: def.coinReward,
+        gemReward: def.gemReward,
+        tokenReward: def.tokenReward,
       };
 
       if (!wasCompleted && nowCompleted && event.deliveryCompleted) {

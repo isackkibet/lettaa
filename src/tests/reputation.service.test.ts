@@ -6,7 +6,7 @@ describe('ReputationService', () => {
 
   it('returns 100 for a flawless track record', () => {
     const player = createDefaultPlayer();
-    player.deliveriesCompleted = 20;
+    player.totalDeliveries = 20;
     player.onTimeDeliveries = 20;
     player.fiveStarRatings = 20;
     player.totalRatedDeliveries = 20;
@@ -16,7 +16,7 @@ describe('ReputationService', () => {
 
   it('returns a mid-range score for a mixed track record', () => {
     const player = createDefaultPlayer();
-    player.deliveriesCompleted = 10;
+    player.totalDeliveries = 10;
     player.onTimeDeliveries = 5;
     player.fiveStarRatings = 2;
     player.totalRatedDeliveries = 10;

@@ -13,8 +13,8 @@ describe('GameService (core game loop)', () => {
       rating: 5,
     });
 
-    expect(progress.xpEarned).toBe(100); // 50 + 20 + 30
-    expect(progress.totalXp).toBe(100);
+    expect(progress.xpEarned).toBe(110); // 50 + 20 + 40
+    expect(progress.totalXp).toBe(110);
     expect(progress.level).toBe(1);
     expect(progress.levelUp).toBe(false);
     expect(progress.achievementsUnlocked.map((a) => a.title)).toContain('First Delivery');
@@ -24,7 +24,7 @@ describe('GameService (core game loop)', () => {
 
   it('detects a level-up when accumulated XP crosses a threshold', () => {
     const player = createDefaultPlayer();
-    player.totalXp = 190;
+    player.xp = 190;
     player.level = 1;
 
     const progress = gameService.processDelivery(player, {

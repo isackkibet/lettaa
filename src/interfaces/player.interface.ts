@@ -1,20 +1,57 @@
+import { AccountStatus, PerformanceGrade, RiderRole } from '@/types/rider.types';
+
 /**
- * Snapshot of a player's persisted state, as owned by Backend Developer 2's
- * database layer. The engine only reads/derives from this — it never writes
- * to a database itself.
+ * Snapshot of a player's persisted state, backed by `letaa_core.riders`
+ * joined with `letaa_core.users` (see letaa_db.sql). Field names mirror the
+ * DB columns (camelCased) so mapping a row onto this shape is a straight
+ * rename. The engine only reads/derives from this — it never writes to a
+ * database itself.
  */
 export interface Player {
   id: string;
-  totalXp: number;
+
+  // letaa_core.users
+  walletAddress: string;
+
+  // letaa_core.riders — engine-computed core stats
+  xp: number;
   level: number;
-  deliveriesCompleted: number;
+  totalDeliveries: number;
   onTimeDeliveries: number;
   lateDeliveries: number;
   fiveStarRatings: number;
   totalRatedDeliveries: number;
-  currentOnTimeStreak: number;
+  currentStreak: number;
   dailyMissionProgress: DailyMissionProgress;
   unlockedAchievementIds: string[];
+
+  // letaa_core.riders — persisted DB columns not yet derived by the engine
+  coins: number;
+  gems: number;
+  tokens: number;
+  riderRole: RiderRole;
+  performanceGrade: PerformanceGrade;
+  reputationScore: number;
+  status: AccountStatus;
+  successfulDeliveries: number;
+  failedDeliveries: number;
+  acceptanceRate: number;
+  completionRate: number;
+  ontimeRate: number;
+  avgDeliveryTime: number;
+  avgCustomerRating: number;
+  totalDistanceKm: number;
+  totalActiveHours: number;
+  longestStreak: number;
+  weeklyRank: number | null;
+  monthlyRank: number | null;
+  lifetimeRank: number | null;
+  totalRewardsEarned: number;
+  totalBadges: number;
+  totalNfts: number;
+  totalCoinsEarned: number;
+  totalCoinsRedeemed: number;
+  totalTokensEarned: number;
 }
 
 /**

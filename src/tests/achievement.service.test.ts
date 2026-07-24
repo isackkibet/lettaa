@@ -7,7 +7,7 @@ describe('AchievementService', () => {
 
   it('unlocks First Delivery after one completed delivery', () => {
     const player = createDefaultPlayer();
-    player.deliveriesCompleted = 1;
+    player.totalDeliveries = 1;
 
     const { newlyUnlocked } = achievementService.evaluate(player, 1);
 
@@ -16,7 +16,7 @@ describe('AchievementService', () => {
 
   it('does not re-unlock an achievement the player already has', () => {
     const player = createDefaultPlayer();
-    player.deliveriesCompleted = 1;
+    player.totalDeliveries = 1;
     player.unlockedAchievementIds = [AchievementId.FIRST_DELIVERY];
 
     const { newlyUnlocked, all } = achievementService.evaluate(player, 1);
@@ -25,9 +25,9 @@ describe('AchievementService', () => {
     expect(all.find((a) => a.id === AchievementId.FIRST_DELIVERY)?.earned).toBe(true);
   });
 
-  it('unlocks Customer Favorite after 5 five-star ratings', () => {
+  it('unlocks Customer Favorite after 25 five-star ratings', () => {
     const player = createDefaultPlayer();
-    player.fiveStarRatings = 5;
+    player.fiveStarRatings = 25;
 
     const { newlyUnlocked } = achievementService.evaluate(player, 1);
 

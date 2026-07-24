@@ -19,7 +19,7 @@ describe('XPService', () => {
       onTime: true,
       rating: 5,
     });
-    expect(result.xpDelta).toBe(100);
+    expect(result.xpDelta).toBe(110); // 50 + 20 + 40
   });
 
   it('awards nothing when the delivery was not completed', () => {
