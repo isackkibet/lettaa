@@ -1,0 +1,142 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  lint-and-test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: ./
+
+      - name: Run backend lint
+        run: npm run lint
+
+      - name: Run backend tests
+        run: npm test
+
+      - name: Install contracts dependencies
+        run: npm ci
+        working-directory: ./contracts
+
+      - name: Compile contracts
+        run: npm run compile
+
+  deploy-contracts:
+    name: Deploy to Fuji
+    needs: lint-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          working-directory: ./contracts
+
+      - name: Install contracts dependencies
+        run: npm ci
+        working-directory: ./contracts
+
+      - name: Deploy to Fuji
+        env:
+          AVALANCHE_RPC_URL: ${{ secrets.AVALANCHE_RPC_URL }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          SNOWTRACE_API_KEY: ${{ secrets.SNOWTRACE_API_KEY }}
+        run: npm run deploy:fuji
+        working-directory: ./contracts
+
+      - name: Upload deployment artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-deployment
+          path: contracts/deployments/
+          retention-days: 7
+
+  verify-contracts:
+    name: Verify on Snowtrace
+    needs: deploy-contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download deployment artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: contract-deployment
+          path: contracts/deployments/
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          working-directory: ./contracts
+
+      - name: Install contracts dependencies
+        run: npm ci
+        working-directory: ./contracts
+
+      - name: Verify contracts
+        env:
+          SNOWTRACE_API_KEY: ${{ secrets.SNOWTRACE_API_KEY }}
+        run: npm run verify:fuji
+        working-directory: ./contracts
+
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          working-directory: ./frontend
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: ./frontend
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: ./frontend
+        env:
+          VITE_API_URL: ${{ secrets.FRONTEND_API_URL }}
+          VITE_TOKEN_ADDRESS: ${{ secrets.TOKEN_CONTRACT_ADDRESS }}
+          VITE_HUB_ADDRESS: ${{ secrets.HUB_CONTRACT_ADDRESS }}
+
+  deploy-backend:
+    name: Deploy Backend
+    needs: lint-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Railway/Render
+        # Add your deployment command here
+        run: echo "Deploy backend to your hosting provider"
