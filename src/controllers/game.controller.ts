@@ -2,21 +2,18 @@ import { Request, Response } from 'express';
 import { GameService } from '@/services/game.service';
 import { DeliveryEvent, Player } from '@/interfaces';
 import { createDefaultPlayer } from '@/models/player.model';
+import { distributeReward } from '@/blockchain/reward.service';
+import { supabase } from '@/database/supabase.client';
 
-/**
- * POST /api/game/delivery request body. `deliveryCompleted`/`onTime`/`rating`
- * match the public API contract; `player` is an optional escape hatch for
- * local testing/demos so the engine can be exercised statefully before a
- * real persistence layer exists.
- */
 interface DeliveryRequestBody extends DeliveryEvent {
   player?: Player;
+  riderId?: string;
 }
 
 export class GameController {
   constructor(private readonly gameService: GameService = new GameService()) {}
 
-  handleDelivery = (req: Request, res: Response): void => {
+  handleDelivery = async (req: Request, res: Response): Promise<void> => {
     const body = req.body as DeliveryRequestBody;
 
     if (typeof body?.deliveryCompleted !== 'boolean' || typeof body?.onTime !== 'boolean') {
@@ -31,10 +28,8 @@ export class GameController {
       return;
     }
 
-    // TODO(Backend Developer 2): replace this with a fetch of the
-    // authenticated player's persisted state from Supabase, e.g.:
-    //   const player = await playerRepository.findById(req.user.id);
-    const player: Player = body.player ?? createDefaultPlayer(req.body.playerId ?? 'anonymous');
+    const riderId = body.riderId ?? req.body.playerId ?? 'anonymous';
+    const player: Player = body.player ?? createDefaultPlayer(riderId);
 
     const event: DeliveryEvent = {
       deliveryCompleted: body.deliveryCompleted,
@@ -44,9 +39,26 @@ export class GameController {
 
     const progress = this.gameService.processDelivery(player, event);
 
-    // TODO(Backend Developer 2): persist `progress`-derived player state back
-    // to Supabase here, and trigger Avalanche reward issuance when
-    // progress.rewardEligible is true.
+    const { data: rider } = await supabase
+      .from('riders')
+      .select('wallet_address')
+      .eq('id', riderId)
+      .single();
+
+    if (progress.rewardEligible && rider?.wallet_address) {
+      const reason = this.getRewardReason(progress);
+      const amount = this.calculateRewardAmount(progress);
+
+      console.log(`[GameController] Reward eligible for ${riderId}: ${amount} RXP for ${reason}`);
+
+      const result = await distributeReward(riderId, rider.wallet_address, amount, reason);
+
+      if (result.success) {
+        console.log(`[GameController] Reward distributed: ${result.txHash} (mocked: ${result.mocked})`);
+      } else {
+        console.error(`[GameController] Reward distribution failed: ${result.error}`);
+      }
+    }
 
     res.status(200).json({
       xpEarned: progress.xpEarned,
@@ -61,4 +73,18 @@ export class GameController {
       feedback: progress.feedback,
     });
   };
+
+  private getRewardReason(progress: any): string {
+    if (progress.levelUp) return `level_up_${progress.level}`;
+    if (progress.achievementsUnlocked.length > 0) return `achievement_${progress.achievementsUnlocked[0].id}`;
+    if (progress.missionProgress.completed > 0) return `mission_complete_${progress.missionProgress.completed}`;
+    return 'reputation_reward';
+  }
+
+  private calculateRewardAmount(progress: any): number {
+    if (progress.levelUp) return progress.level * 100;
+    if (progress.achievementsUnlocked.length > 0) return progress.achievementsUnlocked.length * 200;
+    if (progress.missionProgress.completed > 0) return progress.missionProgress.completed * 500;
+    return 100;
+  }
 }
