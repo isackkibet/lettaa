@@ -1,0 +1,85 @@
+Here is a concise system overview focused on the **smart contract connection**.
+
+# Smart Contract Connection to the System
+
+The smart contract serves as the **trusted reward layer** of the application. It is not responsible for gameplay or business logic—it only executes and records verified rewards on Avalanche.
+
+## System Flow
+
+```text
+Frontend
+    │
+    │ Connect Wallet
+    ▼
+Backend
+    │
+    │ Store rider wallet address
+    ▼
+Database (Supabase)
+    │
+    │ Rider completes delivery
+    ▼
+Gamification Engine
+    │
+    │ Calculates:
+    │ • XP
+    │ • Levels
+    │ • Missions
+    │ • Reputation
+    │ • Reward Eligibility
+    ▼
+Reward Service
+    │
+    │ If rewardEligible == true
+    ▼
+Avalanche Smart Contract
+    │
+    │ Uses backend credentials (.env):
+    │ • PRIVATE_KEY
+    │ • RPC_URL
+    │ • CONTRACT_ADDRESS
+    │
+    │ Executes:
+    │ • Reward payout
+    │ • Achievement recording
+    │ • Emits blockchain event
+    ▼
+Avalanche Network
+    │
+    │ Returns Transaction Hash
+    ▼
+Backend
+    │
+    │ Stores txHash and reward record
+    ▼
+Frontend
+    │
+    │ Displays reward confirmation,
+    │ updated progress, and blockchain transaction link.
+```
+
+## Responsibilities
+
+### Frontend
+
+* Connect the rider's wallet.
+* Send the wallet address to the backend.
+* Display gameplay progress and blockchain transaction status.
+
+### Backend
+
+* Manage the game engine.
+* Determine reward eligibility.
+* Securely sign blockchain transactions using the server's private key.
+* Communicate with the Avalanche smart contract.
+
+### Smart Contract
+
+* Receive reward requests from the backend.
+* Transfer rewards to rider wallets.
+* Record achievements or reward events on-chain.
+* Return a verifiable transaction hash.
+
+### Avalanche
+
+Provides a transparent, immutable record of rewards and achievements, ensuring payouts can be independently verified while keeping gameplay fast by processing game logic off-chain.
