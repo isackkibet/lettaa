@@ -1,0 +1,30 @@
+{
+  "name": "gamification-engine",
+  "version": "1.0.0",
+  "description": "Gamification Engine for the Avalanche courier platform hackathon MVP. Calculates XP, levels, missions, achievements, reputation, and rewards. Stateless by design — persistence is owned by another service.",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
+    "start": "node dist/server.js",
+    "dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/server.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.9",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.5",
+    "ts-node-dev": "^2.0.0",
+    "tsc-alias": "^1.9.1",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.5.3"
+  }
+}
